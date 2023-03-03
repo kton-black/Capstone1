@@ -1,29 +1,48 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+import random
 
-#Work on setting points to players
+#List of all letters in scrabble
+player_letters = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
+letters_in_hand = []
+#letters_in_hand[7]
 
 #Variables
 lst = []
 score = 0
 total = 0
 i = 0
+count = 0
 
 #grabs username
 username: str = input("Please enter a username: ")
 print("Is-", username, "-playing? If yes, type Yes, if no, type No: ")
 player = input()
+print("\n\n\n")
 
 #Keep total for user playing
 if player == "Yes":
 
     #Keeping track of user's points
     while player == "Yes":
+
+        #Grabbing letters from the letter pool
+        for randomletter in player_letters:
+            while count <= 7:
+                if count == 7:
+                    break
+                else: 
+                    randomletter = random.choices(player_letters)
+                    letters_in_hand.append(randomletter)
+                    count = count + 1
+        
+        print("Here are the letters you currently have: ", letters_in_hand) 
         
         #Resetting Score
         score = 0
 
-        WordInput: str = input("Please Enter a valid word (If you have a blank tile, use an underscore in the loaction of where you'd like to use it): \n")
+        #Getting the input for the word the user would like to use
+        WordInput: str = input("Please Enter a valid word With the letters you received (If you have a blank tile, use an underscore in the loaction of where you'd like to use it): \n")
 
         #Making letters uppercase
         Word = WordInput.upper()
@@ -32,14 +51,12 @@ if player == "Yes":
         if len(Word) > 15:
             print("Invalid word, must be smaller than 15 letters")
         else:
-
-            print("\n\n\nYou typed the word: ", Word)
+            print("\n\nYou typed the word: ", Word)
 
             #For an i in the word
             for letter in Word:
                 #Split the up the word
                 lst.append(letter)
-
                 temp = 0
 
                 #Finding the letter and change it to its numerical value
@@ -105,11 +122,13 @@ if player == "Yes":
         
         print("The score of your word is: ", score) 
 
+        #Gathering the total after every 'round'
         total = total + temp 
-        print(username, "total score is: ", total, "\n")
+        print(username, "total score is: ", total, "\n\n")
 
         print("Is", username, "Still playing? If yes, type Yes. If not, type No:")
         player = input()
+        print("\n\n")
 
 elif player == "No":
     print("Don't cheat!")
