@@ -6,26 +6,28 @@ import random
 
 
 def gathering_letters():
-    #Variables
-    count = 0
 
     #List of all letters in scrabble
     player_letters = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
     letters_in_hand = []
 
     #Grabbing letters from the letter pool
-    for randomletter in player_letters:
+    for x in range(0,7):
         #Only giving the user 7 letters
-        if count == 7:
-            break
-        else:
-            #Grabbing random letters and adding them into the list 
-            randomletter = random.choices(player_letters)
-            letters_in_hand.append(randomletter)
-            count = count + 1
+
+        #Grabbing random letters and adding them into the list 
+        randomletter = random.choices(player_letters)[0]
+        letters_in_hand.append(randomletter)
+        
+        player_letters.remove(randomletter)
+
+        #or
+
+        #removeletter = player_letters.index(randomletter)
+        #player_letters.pop(removeletter)
 
     print("Here are the letters you currently have: ", letters_in_hand) 
-
+ 
 
 
 
