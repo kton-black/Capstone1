@@ -26,15 +26,15 @@ def valid_word(input_word):
 
 #Delete later, just the testing functionality for the valid word file
 #DELETE
-while True:
-    input_word = input('Enter an UPPERCASE word to check (type "quit" to exit): ')
+#while True:
+    #input_word = input('Enter an UPPERCASE word to check (type "quit" to exit): ')
 
-    if input_word == 'quit':
-        break
+    #if input_word == 'quit':
+        #break
 
-    result = valid_word(input_word)
+    #result = valid_word(input_word)
 
-    if result:
-        print('Valid Scrabble word')
-    else:
-        print('Invalid Scrabble word')
+    #if result:
+        #print('Valid Scrabble word')
+    #else:
+        #print('Invalid Scrabble word')

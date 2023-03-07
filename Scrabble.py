@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import random
-
+from validword import valid_word
 
 
 
@@ -78,21 +78,25 @@ def gather_score(player, username):
 
         #Getting the input for the word the user would like to use
         WordInput: str = input("Please Enter a valid word With the letters you received (If you have a blank tile, use an underscore in the loaction of where you'd like to use it): \n")
-
-        #Making letters uppercase
         Word = WordInput.upper()
 
+        #Checking for valid word
+        while True:
+            if valid_word(Word.upper()):
+                break
+            else:
+                Word: str = input("Please enter a valid word with the letters you received!\n")
+                
+        word = Word.upper()
+
         #Making sure the word is within the space allowed
-        if len(Word) > 15:
+        if len(word) > 15:
             print("Invalid word, must be smaller than 15 letters")
         else:
-            print("\n\nYou typed the word: ", Word)
-
-            #valid word 
-            #valid word function
+            print("\n\nYou typed the word: ", word)
 
             #For an i in the word
-            for letter in Word:
+            for letter in word:
                 #Split the up the word
                 lst.append(letter)
                 temp = 0
