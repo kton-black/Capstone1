@@ -27,6 +27,10 @@ def gathering_letters():
         #player_letters.pop(removeletter)
 
     print("Here are the letters you currently have: ", letters_in_hand) 
+    print("Would you like to redraw tiles?")
+    player_input = input("Type Yes to redraw: ")
+    if player_input == "Yes" or player_input == "yes":
+        gathering_letters()
  
 
 
@@ -40,7 +44,7 @@ def gather_score(player, username):
     i = 0
 
     #Keeping track of user's points
-    while player == "Yes":
+    while player == "Yes" or player == "yes":
 
         #Gathers the letters from the pool
         gathering_letters()
@@ -149,11 +153,11 @@ def main() -> None:
     print("\n\n\n")
 
     #Keep total for user playing
-    if player == "Yes":
+    if player == "Yes" or player == "yes":
 
         gather_score(player, username)
 
-    elif player == "No":
+    elif player == "No" or player == "no":
         print("Don't cheat!")
 
     else:
