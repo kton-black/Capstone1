@@ -30,6 +30,34 @@ def gathering_letters():
  
 
 
+#def words_from_letter(Word)
+
+    #For a letting in the player's word
+    #for letter in player_word
+        #If that letter is in letters_in_hand
+        #if letter in letters_in_hand:
+            #letters_in_hand.remove(letter)
+
+    #return letters_in_hand
+
+
+
+#def word_from_letter_in_hand(Word,letter_list):
+
+    #splits the word up
+    #Word.split()
+
+    #For and x withing the range of the list
+    #for x in range(0,7):
+        #For a letter in the word that can be found in letter_list
+        #for Word in letter_list:
+            #letter_list.remove(Word)
+            #gathering_letters()
+
+    #Returned the updated list with the current letters 
+    #return letter_list
+
+
 
 
 def gather_score(player, username):
