@@ -5,11 +5,14 @@ description = ""
 authors = ["Keaton Black <ktbcxc@umsystem.edu>"]
 readme = "README.md"
 
+[tool.poetry.scripts]
+scrabble = "scrabble.Scrabble:main"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 pygame = "^2.2.0"
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
