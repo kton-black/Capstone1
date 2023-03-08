@@ -200,9 +200,8 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
                 i += 1
                 temp = score
 
-                letter_tiles, letter_pool = add_letters(letter_tiles, letter_pool)
-        
-                player_moves.append(Word)
+        letter_tiles, letter_pool = add_letters(letter_tiles, letter_pool)
+        player_moves.append(Word)
 
         print("The score of your word is: ", score) 
         
