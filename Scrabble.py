@@ -83,9 +83,20 @@ def add_letters(letter_tiles, letter_pool):
         letter_tiles.extend(new_tiles)
         for tile in new_tiles:
             letter_pool.remove(tile)
-        print(f"Here are your new letters: {letter_tiles}")
-    else:
-        print("You already have 7 tiles, no new letters were added.")
+    #allows redrawing
+    valid_input = False
+    while valid_input == False:
+        print("\nHere are your new tiles: ", letter_tiles) 
+        print("\nWould you like to redraw tiles?")
+        player_input = input("Type yes or no: ")
+        if player_input == "Yes" or player_input == "yes":
+            redraw(letter_tiles, letter_pool)
+        elif player_input == "No" or player_input == "no":
+            valid_input = True
+            print("\nOkay! Here are your tiles: ", letter_tiles)
+        else:
+    	    print("Invalid input, please try again!\n")
+
     return letter_tiles, letter_pool
 
 
