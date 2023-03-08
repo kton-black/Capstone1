@@ -3,13 +3,16 @@
 import random
 from validword import valid_word
 
+#predefined letter values for score calculation
+letter_values = {
+    '_': 0, 'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
+    'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10,
+    'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10
+}
 
 
+def gathering_letters(n, player_letters):
 
-def gathering_letters(n, player_leters):
-
-    #List of all letters in scrabble
-    player_letters = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
     letters_in_hand = []
 
     #Grabbing letters from the letter pool
@@ -74,7 +77,7 @@ def remove_letters(Word, letter_tiles):
 
 
 
-
+#refills hand with available tiles in letter pool
 def add_letters(letter_tiles, letter_pool):
     num_tiles = len(letter_tiles)
     if num_tiles < 7:
@@ -100,17 +103,27 @@ def add_letters(letter_tiles, letter_pool):
     return letter_tiles, letter_pool
 
 
+
+
+#uses letter_values to calculate the score of a word
+def calc_word_score(word):
+    lst = list(word.upper())
+    score = 0
+    for letter in lst:
+        score += letter_values.get(letter, 0)
+    return score
+
+
+
+
+
+
 def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
     #Variables
-    lst = []
-    score = 0
-    total = 0
-    i = 0
-
-    #Resetting Score
     score = 0
 
     #Getting the input for the word the user would like to use
+    print(letter_tiles)
     WordInput: str = input("Please Enter a valid word from you tiles: ")
     valid_input = False
 
@@ -134,78 +147,13 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
 
     letter_tiles = remove_letters(Word, letter_tiles)
 
-    #For an i in the word
-    for letter in Word:
-        #Split the up the word
-        lst.append(letter)
-        temp = 0
+    score = calc_word_score(Word)
 
-        #Finding the letter and change it to its numerical value
-        #Blank tile is worth 0 points
-        if lst[i] == '_':
-                score = score + 0
-        if lst[i] == 'A':
-                score = score + 1 
-        if lst[i] == 'E':
-                score = score + 1
-        if lst[i] == 'I':
-                score = score + 1
-        if lst[i] == 'L':
-                score = score + 1
-        if lst[i] == 'N':
-                score = score + 1
-        if lst[i] == 'O':
-                score = score + 1
-        if lst[i] == 'R':
-                score = score + 1
-        if lst[i] == 'S':
-                score = score + 1
-        if lst[i] == 'T':
-                score = score + 1
-        if lst[i] == 'U':
-                score = score + 1
-        if lst[i] == 'D':
-                score = score + 2
-        if lst[i] == 'G':
-                score = score + 2
-        if lst[i] == 'B':
-                score = score + 3
-        if lst[i] == 'C':
-                score = score + 3
-        if lst[i] == 'M':
-                score = score + 3
-        if lst[i] == 'P':
-                score = score + 3
-        if lst[i] == 'F':
-                score = score + 4
-        if lst[i] == 'H':
-                score = score + 4
-        if lst[i] == 'V':
-                score = score + 4
-        if lst[i] == 'W':
-                score = score + 4
-        if lst[i] == 'Y':
-                score = score + 4
-        if lst[i] == 'K':
-                score = score + 5
-        if lst[i] == 'J':
-                score = score + 8
-        if lst[i] == 'X':
-                score = score + 8
-        if lst[i] == 'Q':
-                score = score + 10
-        if lst[i] == 'Z':
-                score = score + 10
+    print("The score of your word is: ", score) 
+    letter_tiles, letter_pool = add_letters(letter_tiles, letter_pool)
+    player_moves.append(Word)
 
-        #Increments through the list
-        i += 1
-        temp = score
-
-        print("The score of your word is: ", score) 
-        letter_tiles, letter_pool = add_letters(letter_tiles, letter_pool)
-        player_moves.append(Word)
-
-        return score, letter_tiles, letter_pool, player_moves
+    return score, letter_tiles, letter_pool, player_moves
 
 
 
@@ -233,30 +181,41 @@ def main() -> None:
         Continue_game = input()
         print("\n")
 
-        if Continue_game == "c" or Continue_game == "C":
-            player1_score_addition, player1_tiles, letter_pool, player1_moves =  gather_score(username1, player_num, player1_tiles, letter_pool, player1_moves)
-            player1_score += player1_score_addition
-        elif Continue_game == "q" or Continue_game == "Q":
-            print("\nGame Over!")
-            game_over = True
-        else:
-            print("\nInvalid Input")
+        valid_input = False
+        while valid_input == False:
+            if Continue_game == "c" or Continue_game == "C":
+                player1_score_addition, player1_tiles, letter_pool, player1_moves =  gather_score(username1, player_num, player1_tiles, letter_pool, player1_moves)
+                player1_score += player1_score_addition
+                valid_input = True
+            elif Continue_game == "q" or Continue_game == "Q":
+                print("\nGame Over!")
+                game_over = True
+                valid_input = True
+            else:
+                print("\nInvalid Input, please try again! Type c to continue or q to quit")
+                Continue_game = input()
 
         if Continue_game == "c" or Continue_game == "C":
+
             player_num = 2;
             #Player 2 Turn
             print("\nPlayer 2 -", username2, "it is your turn! Continue game(type 'c') or quit(type 'q')?")
             Continue_game = input() 
             print("\n")
 
-            if Continue_game == "c" or Continue_game == "C":
-                player2_score_addition, player2_tiles, letter_pool, player2_moves =  gather_score(username2, player_num, player2_tiles, letter_pool, player2_moves)
-                player2_score += player2_score_addition
-            elif Continue_game  == "q" or Continue_game == "Q":
-                print("\nGame Over!")
-                game_over = True
-            else:
-                print("\nInvalid Input")
+            valid_input = False
+            while valid_input == False:
+                if Continue_game == "c" or Continue_game == "C":
+                    player2_score_addition, player2_tiles, letter_pool, player2_moves =  gather_score(username2, player_num, player2_tiles, letter_pool, player2_moves)
+                    player2_score += player2_score_addition
+                    valid_input = True
+                elif Continue_game  == "q" or Continue_game == "Q":
+                    print("\nGame Over!")
+                    game_over = True
+                    valid_input = True
+                else:
+                    print("\nInvalid Input, please try again! Type c to continue or q to quit")
+                    Continue_game = input()
     print("Player 1 Score: ", player1_score)
     print("Player 1 Moves: ", player1_moves)
     print("Player 2 Score: ", player2_score)
