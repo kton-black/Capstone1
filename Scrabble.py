@@ -130,10 +130,12 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
     while valid_input == False:
         #Making letters uppercase
         Word = WordInput.upper()
+        temp_letter_tiles = letter_tiles
 
         #check input is made from tiles in hand
         for char in Word:
        	    if char in letter_tiles:
+       	        temp_letter_tiles.remove(char)
         	    #valid word
                 if len(Word) >= 2 and len(Word) <= 15:
                     if valid_word(Word) == True:
