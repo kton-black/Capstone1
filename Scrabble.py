@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import random
+import time
 from validword import valid_word
 
 #predefined letter values for score calculation
@@ -173,11 +174,13 @@ def main() -> None:
     player1_moves =[]
     player2_score = 0
     player2_moves = []
+    start_time = time.time()  # record start time
+    time_limit = 60  # set time limit in seconds
     game_over = False
 
     print("\nLet's play Scrabble!\n")
-    while game_over == False:
-        player_num = 1;
+    while (time.time() - start_time < time_limit and not game_over == True):
+        player_num = 1
         #Player 1 Turn
         print("\nPlayer 1 -", username1, "it is your turn! Continue game(type 'c') or quit(type 'q')?") 
         Continue_game = input()
@@ -199,7 +202,7 @@ def main() -> None:
 
         if Continue_game == "c" or Continue_game == "C":
 
-            player_num = 2;
+            player_num = 2
             #Player 2 Turn
             print("\nPlayer 2 -", username2, "it is your turn! Continue game(type 'c') or quit(type 'q')?")
             Continue_game = input() 
@@ -218,6 +221,10 @@ def main() -> None:
                 else:
                     print("\nInvalid Input, please try again! Type c to continue or q to quit")
                     Continue_game = input()
+    if game_over == True:
+        print("Game Over!")
+    else:
+        print("Times Up, Game Over!")
     print("Player 1 Score: ", player1_score)
     print("Player 1 Moves: ", player1_moves)
     print("Player 2 Score: ", player2_score)
