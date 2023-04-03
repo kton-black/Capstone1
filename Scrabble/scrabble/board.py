@@ -31,8 +31,11 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.width = 0
         self.length = 0
 
-        #determine active player and hand
+        #determine active player and their scores
         self.turn = 0
+        self.p1_score = 0
+        self.p2_score = 0
+        self.score = 0
 
         #defines selected tile to set position on board
         self.selected = None
@@ -256,6 +259,38 @@ class Scrabble_Board(pygame.sprite.Sprite):
             self.selected = None
 
     def next_turn(self):
+        #updates scores and removes tiles from hands of player
+
+        if self.turn == 0:
+            self.p1_score += self.score
+
+
+        else:
+            self.p2_score += self.score
+
+        self.score = 0
+
+        for tile in self.in_play:
+            tile.add(self.on_board)
+            if self.turn == 0:
+                tile.remove(self.player1)
+            else:
+                tile.remove(self.player2)
+            tile.remove(self.in_play)
+            self.played_tiles[tile.col] = self.played_tiles[tile.col][:tile.row] + tile.letter + self.played_tiles[tile.col][tile.row + 1:]
+            self.tiles_in_play[tile.col] = self.tiles_in_play[tile.col][:tile.row] + '.' + self.tiles_in_play[tile.col][tile.row + 1:]
+
+        self.turn ^= 1
+
+        pass
+
+    def reset_active(self):
+        for tile in self.in_play:
+            self.tiles_in_play[tile.col] = self.tiles_in_play[tile.col][:tile.row] + '.' + self.tiles_in_play[tile.col][tile.row + 1:]
+            tile.remove(self.in_play)
+            tile.in_play = False
+
+    def get_word_score(self):
         pass
 
     # def move_tile(self, tile, turn = self.turn):

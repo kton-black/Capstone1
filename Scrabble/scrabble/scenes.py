@@ -50,22 +50,24 @@ class BoardScreen(SceneBase):
                 self.board.select_tile(event.pos[0], event.pos[1])
                 self.selecting = not self.selecting
 
-                pass
-            elif event.type == pygame.MOUSEMOTION:
-                # move tile
-                pass
             elif event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
                 # end turn
                 self.check = True
-                pass
+
         pass
 
     def Update(self):
         # call functions to verify plays
-        verified = False
-        if self.check:
-            print("Insert verification code")
 
+        if self.check:
+            if self.verify_word():
+                # self.board.get_score()
+                self.board.next_turn()
+            else:
+                self.board.reset_active()
+
+        self.board.update()
+        self.check = False
 
         pass
 
@@ -75,4 +77,6 @@ class BoardScreen(SceneBase):
         self.board.render(screen)
 
     def verify_word(self):
+
+        return True
         pass
