@@ -2,29 +2,34 @@
 # -*- coding: utf-8 -*-
 import random
 import pygame
-from scrabble.board import Scrabble_Board
+# from scrabble.board import Scrabble_Board
+from scrabble.scenes import StartScreen, BoardScreen
 
 def main():
+    window = Scrabble()
+
+
+
     #List of all letters in scrabble
-    player_letters = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
-    letters_in_hand = []
+    # player_letters = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
+    # letters_in_hand = []
     #letters_in_hand[7]
 
     #Variables
-    lst = []
-    score = 0
-    total = 0
-    i = 0
-    count = 0
+    # lst = []
+    # score = 0
+    # total = 0
+    # i = 0
+    # count = 0
 
-    screen = pygame.display.set_mode((1000, 600))
-    background = pygame.Surface((1000, 1000))
-    background.fill((255, 0, 255))
-    screen.blit(background, (0, 0))
-    board = Scrabble_Board(screen)
-    board.create_board()
+    # screen = pygame.display.set_mode((1000, 600))
+    # background = pygame.Surface((1000, 1000))
+    # background.fill((255, 0, 255))
+    # screen.blit(background, (0, 0))
+    # board = Scrabble_Board(screen)
+    # board.create_board()
     # board.display(screen)
-    pygame.display.flip()
+    # pygame.display.flip()
 
     # screen.blit(pygame.transform.scale(board.window, (1000, 1000)), (0, 0))
 
@@ -34,7 +39,7 @@ def main():
     # player = input()
     # print("\n\n\n")
 
-    board.start()
+    # board.start()
 
     #Keep total for user playing
     # if player == "Yes":
@@ -152,6 +157,38 @@ def main():
     # else:
     #     print("Invalid Input")
 
-            
+class Scrabble(object):
+    def __init__(self, window_width=1000, window_height=600):
+        self.screen = pygame.display.set_mode((window_width,window_height))
+        self.run()
+
+    def run(self):
+        scene = StartScreen()
+
+        while scene:
+            key_inputs = pygame.key.get_pressed()
+            inputs = []
+            for event in pygame.event.get():
+                quit = False
+                if event.type == pygame.QUIT:
+                    quit = True
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        quit = True
+
+
+                if quit:
+                    scene = None
+                else:
+                    inputs.append(event)
+
+            scene.ProcessInput(inputs, key_inputs)
+            scene.Update()
+            scene.Render(self.screen)
+
+            scene = scene.next
+
+            pygame.display.flip()
+
 if __name__ == "__main__":
     main()
