@@ -138,32 +138,33 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
         for char in Word: 
                 if char in letter_tiles:
                         temp_letter_tiles.remove(char)
-                        
-                        #valid word
-                        if len(Word) >= 2 and len(Word) <= 15:
-                                if char == "_": 
-                                        #Get the character for the blank space
-                                        print("Please type the letter you would like to use for the blank tile: ")
-                                        blank_input = input()
 
-                                        #Taking away the underscore and replacing it with a letter of choice
-                                        temp_letter_tiles.remove(char)
-                                        temp_letter_tiles.append(blank_input)
+                        if "_" in Word: 
+                                #Get the character for the blank space
+                                print("Please type the letter you would like to use for the blank tile: ")
+                                blank_input = input()
 
-                                        #Rewrite the word with the desired character so that it will go through valid word
-                                        Word: str = input("Please retype the word with the letter you have chosen: ")
+                                #Taking away the underscore and replacing it with a letter of choice
+                                temp_letter_tiles.append(blank_input)
 
-                                        #Making letters uppercase
-                                        Word = WordInput.upper()
+                                #Rewrite the word with the desired character so that it will go through valid word
+                                Word: str = input("Please retype the word with the letter you have chosen: ")
 
-                                else:
-                                        #If there is not a blank tile: ignore
-                                        blank_input = None
+                                #Making letters uppercase
+                                Word = Word.upper()
 
                                 if valid_word(Word) == True:
                                         valid_input = True
                                 else:
                                         WordInput: str = input("Invalid word, please try again: ")
+                        else:
+                                #If there is not a blank tile: ignore
+                                blank_input = None
+                        
+                        #valid word
+                        if len(Word) >= 2 and len(Word) <= 15:
+                                if valid_word(Word) == True:
+                                        valid_input = True
                         else:
                                 WordInput: str = input("Invalid word, please try again: ")
                 else:
