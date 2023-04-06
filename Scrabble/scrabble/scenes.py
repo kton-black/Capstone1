@@ -129,8 +129,11 @@ class BoardScreen(SceneBase):
                     #checks if expanding off of played tiles in between letters (requirement to play word)
                     elif not self.board.played_tiles[rows[0]][col] == '.':
                         on_played = True
-                #checks if expanding off of played tiles on edges horizontally
-                if not on_played:
+                # checks if edge tile is on starting square
+                if start and (max(cols) == 7 or min(cols) == 7):
+                    on_played = True
+                # checks if expanding off of played tiles on edges horizontally
+                elif not on_played:
                     if min(cols) - 1 > -1 and not self.board.played_tiles[rows[0]][min(cols)-1] == '.' or\
                        max(cols) + 1 < len(merged) and not self.board.played_tiles[rows[0]][max(cols)+1] == '.':
                         on_played = True
@@ -145,15 +148,18 @@ class BoardScreen(SceneBase):
                     # checks if expanding off of played tiles in between letters
                     elif not self.board.played_tiles[row][cols[0]] == '.':
                         on_played = True
+                # checks if edge tile is on starting square
+                if start and (max(rows) == 7 or min(rows) == 7):
+                    on_played = True
                 # checks if expanding off of played tiles on edges vertically
-                if not on_played:
+                elif not on_played:
                     if min(rows) - 1 > -1 and not self.board.played_tiles[min(rows)-1][cols[0]] == '.' or\
                        max(rows) + 1 < len(merged) and not self.board.played_tiles[max(rows)+1][cols[0]] == '.':
                         on_played = True
 
             print("On Played: ", on_played)
-            if start or on_played:
-                self.Check_Words()
+            if on_played:
+                # self.Check_Words(merged)
                 return True
         return False
 
@@ -175,5 +181,62 @@ class BoardScreen(SceneBase):
 
         return tiles, start
 
-    def Check_Words(self):
-        pass
+    def Check_Words(self, board):
+
+        matches = {}
+        found_words = []
+        rows = len(grid)
+        cols = len(grid[0])
+
+
+        # search left to right
+        for i in range(rows):
+            for j in range(cols):
+                if grid[i][j] != '-' and (j == 0 or j - 1 == '-'):
+                    # search horizontally
+                    h_word = ''
+                    for k in range(j, cols):
+                        if grid[i][k] == '-':
+                            break
+                        h_word += grid[i][k]
+                        # if h_word in words:
+                        #     if h_word in matches:
+                        #         matches[h_word] += 1
+                        #     else:
+                        #         matches[h_word] = 1
+                        #     found_words.append(h_word)
+
+                    # search vertically
+                    v_word = ''
+                    for k in range(i, rows):
+                        if grid[k][j] == '-':
+                            break
+                        v_word += grid[k][j]
+                        if v_word in words:
+                            if v_word in matches:
+                                matches[v_word] += 1
+                            else:
+                                matches[v_word] = 1
+                            found_words.append(v_word)
+
+        return matches, found_words
+
+    def valid_word(self, input_word):
+        # Checks the length of the input word
+        word_length = len(input_word)
+
+        # Creates a file name according to word length
+        word_file = 'dictionary/' + str(word_length) + 'letterwords.txt'
+
+        # Open and read only the file that matches the word length
+        with open(word_file, 'r') as file:
+            words = file.read().splitlines()
+
+        # Checks if the input word matches a word in the file
+        # Returns valid if the word is found in the text file
+        # If the word is not found in the text file, prints invalid word
+        if input_word in words:
+            # Use bool values to return whether true/valid or false/invalid
+            return True
+        else:
+            return False
