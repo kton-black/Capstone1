@@ -10,6 +10,7 @@ letter_values = {
     'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10
 }
 
+     
 
 def gathering_letters(n, player_letters):
 
@@ -79,6 +80,8 @@ def remove_letters(Word, letter_tiles):
 
 #refills hand with available tiles in letter pool
 def add_letters(letter_tiles, letter_pool):
+    redraw_letter = False
+
     num_tiles = len(letter_tiles)
     if num_tiles < 7:
         num_new_tiles = 7 - num_tiles
@@ -92,13 +95,19 @@ def add_letters(letter_tiles, letter_pool):
         print("\nHere are your new tiles: ", letter_tiles) 
         print("\nWould you like to redraw tiles?")
         player_input = input("Type yes or no: ")
-        if player_input == "Yes" or player_input == "yes":
-            redraw(letter_tiles, letter_pool)
-        elif player_input == "No" or player_input == "no":
-            valid_input = True
-            print("\nOkay! Here are your tiles: ", letter_tiles)
-        else:
-    	    print("Invalid input, please try again!\n")
+
+        while redraw_letter == False:
+            if player_input == "Yes" or player_input == "yes":
+                redraw(letter_tiles, letter_pool)
+                #allowing for only one redraw
+                redraw_letter = True
+            elif player_input == "No" or player_input == "no":
+                valid_input = True
+                print("\nOkay! Here are your tiles: ", letter_tiles)
+                redraw_letter = True
+                break
+            else:
+                print("Invalid input, please try again!\n")
 
     return letter_tiles, letter_pool
 
@@ -111,10 +120,8 @@ def calc_word_score(word, blank_input):
     score = 0
     for letter in lst:
         score += letter_values.get(letter, 0)
-        #Taking the 'blank' tile and subtracting it from the overall score to balance
-        blank_input = letter_values.get(letter)
-        if blank_input == letter:
-            score = score - blank_input
+                #Taking the 'blank' tile and subtracting it from the overall score to balance
+        
     return score
                         
 
@@ -141,8 +148,7 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
 
                         if "_" in Word: 
                                 #Get the character for the blank space
-                                print("Please type the letter you would like to use for the blank tile: ")
-                                blank_input = input()
+                                blank_input: char = input("Please type the letter you would like to use for the blank tile: ")
 
                                 #Taking away the underscore and replacing it with a letter of choice
                                 temp_letter_tiles.append(blank_input)
@@ -153,12 +159,13 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
                                 #Making letters uppercase
                                 Word = Word.upper()
 
+                                blank_input = "_"
+
                                 if valid_word(Word) == True:
                                         valid_input = True
                                 else:
                                         WordInput: str = input("Invalid word, please try again: ")
                         else:
-                                #If there is not a blank tile: ignore
                                 blank_input = None
                         
                         #valid word
@@ -184,6 +191,26 @@ def gather_score(username, player_num, letter_tiles, letter_pool, player_moves):
 
 
 
+def ai_player(ai_tiles, ai_moves):
+     
+     valid_input = False
+
+     while valid_input == False: 
+        for letters in ai_tiles:
+            list_of_random_letters = random.choices(letters)[0]
+            Word = list_of_random_letters
+            if valid_word(Word) == True:
+                #place on board/check on board
+                valid_input = True
+                #takes it out of the loop
+            else:
+                 valid_input = False
+        #trying to generate a list of random letters, checking if its a word, returning if it is (or do i need to check board here first)
+        
+               
+
+
+
 def main() -> None:
     #letter pool
     letter_pool = ['E','E','E','E','E','E','E','E','E','E','E','E','A','A','A','A','A','A','A','A','A','I','I','I','I','I','I','I','I','I','O','O','O','O','O','O','O','O','N','N','N','N','N','N','R','R','R','R','R','R','T','T','T','T','T','T','L','L','L','L','S','S','S','S','U','U','U','U','D','D','D','D','G','G','G','B','B','C','C','M','M','P','P','F','F','H','H','V','V','W','W','Y','Y','K','J','X','Q','Z','_','_']
@@ -191,13 +218,12 @@ def main() -> None:
     #grabs username from player 1 and 2
     username1: str = input("\nPlayer 1, please enter a username: ")
     player1_tiles, letter_pool = gathering_letters(7, letter_pool)
-    username2: str = input("\nPlayer 2, please enter a username: ")
-    player2_tiles, letter_pool = gathering_letters(7, letter_pool)
+    ai_tiles, letter_pool = gathering_letters(7, letter_pool)
 
     player1_score = 0
     player1_moves =[]
-    player2_score = 0
-    player2_moves = []
+    ai_score = 0
+    ai_moves = []
     game_over = False
 
     print("\nLet's play Scrabble!\n")
@@ -224,29 +250,23 @@ def main() -> None:
 
         if Continue_game == "c" or Continue_game == "C":
 
-            player_num = 2
+            #player_num = 2
             #Player 2 Turn
-            print("\nPlayer 2 -", username2, "it is your turn! Continue game(type 'c') or quit(type 'q')?")
-            Continue_game = input() 
-            print("\n")
+            #print("\nPlayer 2 -", username2, "it is your turn! Continue game(type 'c') or quit(type 'q')?")
+            #Continue_game = input() 
+            #print("\n")
 
             valid_input = False
             while valid_input == False:
-                if Continue_game == "c" or Continue_game == "C":
-                    player2_score_addition, player2_tiles, letter_pool, player2_moves =  gather_score(username2, player_num, player2_tiles, letter_pool, player2_moves)
-                    player2_score += player2_score_addition
+                    ai_player(ai_tiles, ai_moves)
+                    ai_score_addition, ai_tiles, letter_pool, ai_moves =  gather_score(player_num, ai_tiles, letter_pool, ai_moves)
+                    ai_score += ai_score_addition
                     valid_input = True
-                elif Continue_game  == "q" or Continue_game == "Q":
-                    print("\nGame Over!")
-                    game_over = True
-                    valid_input = True
-                else:
-                    print("\nInvalid Input, please try again! Type c to continue or q to quit")
-                    Continue_game = input()
+
     print("Player 1 Score: ", player1_score)
     print("Player 1 Moves: ", player1_moves)
-    print("Player 2 Score: ", player2_score)
-    print("Player 2 Moves: ", player2_moves) 
+    print("AI 2 Score: ", ai_score)
+    print("AI Moves: ", ai_moves) 
 
 
 if __name__ == '__main__':
