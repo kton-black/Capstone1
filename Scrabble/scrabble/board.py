@@ -34,7 +34,9 @@ class Scrabble_Board(pygame.sprite.Sprite):
         #determine active player and their scores
         self.turn = 0
         self.p1_score = 0
+        self.p1_display = None
         self.p2_score = 0
+        self.p2_display = None
         self.score = 0
 
         #defines selected object to set position on board
@@ -56,12 +58,18 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.player2 = pygame.sprite.Group()
         self.on_board = pygame.sprite.Group()
         self.in_play = pygame.sprite.Group()
+
+        self.selection = pygame.sprite.Group()
+
+        #use for drawing interface
         self.buttons = pygame.sprite.Group()
+        self.misc = pygame.sprite.Group()
 
         #generate initial data from ini files
         self.load_board()
         self.load_tiles()
         self.load_masks()
+        self.load_interface()
 
         #generate starting hand
         self.update()
@@ -73,15 +81,10 @@ class Scrabble_Board(pygame.sprite.Sprite):
         else:
             player = self.player2
 
-        if self.redraw:
-            for tile in self.selected:
-                tile.add(self.purse)
-                tile.remove(player)
-
         while len(player) < 7:
             count = len(self.purse.sprites())
             if count > 0:
-                i = random.randint(0, count)
+                i = random.randint(0, count - 1)
                 select = self.purse.sprites()[i]
                 player.add(select)
                 select.remove(self.purse)
@@ -165,8 +168,15 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.in_play.draw(screen)
         self.on_board.draw(screen)
 
+    def draw_interface(self, screen):
+        #draws all active interface text and buttons
+
+
+        self.buttons.draw(screen)
+        self.misc.draw(screen)
+
     def draw_scores(self, screen):
-        text = font.render("SCORES:", True, (255, 255, 255))
+
         pass
 
     def render(self, screen):
@@ -176,15 +186,16 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.draw_active_tiles(screen)
         self.draw_grid(screen)
         self.draw_hand(screen)
+        self.draw_interface(screen)
 
         if self.selected:
-            if not self.redraw:
-                # print("Draw Selected", self.selected.rect)
-                pygame.draw.rect(screen, (0,255,0), self.selected.rect, width=1)
-            else:
-                for tile in self.selected:
-                    pygame.draw.rect(screen, (0,255,0), self.selected.rect, width=1)
+            # print("Draw Selected", self.selected.rect)
+            pygame.draw.rect(screen, (0,255,0), self.selected.rect, width=1)
 
+        if len(self.selection.sprites()) > 0:
+            # print("Drawing Redraw Selection")
+            for tile in self.selection.sprites():
+                pygame.draw.rect(screen, (0,255,0), tile.rect, width=1)
 
     def load_board(self):
         #loads board data from 'board.ini' file
@@ -238,6 +249,22 @@ class Scrabble_Board(pygame.sprite.Sprite):
             self.played_tiles.append(empty_row)
             self.tiles_in_play.append(empty_row)
 
+    def load_interface(self):
+        #generate buttons
+
+        p1 = Button(100, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 1, "P1 Score:", color= (250, 220, 120))
+        p2 = Button(100, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 3, "P2 Score:", color= (250, 220, 120))
+        self.p1_display = Button(200, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 150, self.TILE_SIZE[0] * 1, str(self.p1_score))
+        self.p2_display = Button(200, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 150, self.TILE_SIZE[0] * 3, str(self.p2_score))
+
+        redraw = Button(300, self.TILE_SIZE[1] , self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 11, "Redraw")
+
+        self.buttons.add(redraw)
+        self.misc.add(p1)
+        self.misc.add(p2)
+        self.misc.add(self.p1_display)
+        self.misc.add(self.p2_display)
+
     def get_press(self, x, y):
         #finds the tile that was selected and returns it
 
@@ -262,60 +289,88 @@ class Scrabble_Board(pygame.sprite.Sprite):
     def select_tile(self, x, y):
         #generates selection/deselection/movement of a tile
 
-        if not self.redraw:
-            if self.selected == None:
-                self.selected = self.get_press(x, y)
-            else:
-                if self.selected.in_play:
-                    self.tiles_in_play[self.selected.row] = self.tiles_in_play[self.selected.row][:self.selected.col] + '.' + self.tiles_in_play[self.selected.row][self.selected.col + 1:]
-                    self.selected.remove(self.in_play)
-                    self.selected.in_play = False
-                if 0 <= x <= self.BOARD_SIZE[0] and 0 <= y <= self.BOARD_SIZE[1]:
-                    col, row = self.selected.get_board_position(x, y)
-                    if self.tiles_in_play[row][col] == '.' and self.played_tiles[row][col] == '.':
-                        self.selected.update(x,y)
-                        self.selected.in_play = True
-                        self.in_play.add(self.selected)
-                        self.tiles_in_play[row] = self.tiles_in_play[row][:col] + self.selected.letter + self.tiles_in_play[row][col + 1:]
-
-                self.selected = None
-
+        if self.selected == None:
+            self.selected = self.get_press(x, y)
         else:
-            self.selected.append(self.get_press(x, y))
-            pass
+            if self.selected.in_play:
+                self.tiles_in_play[self.selected.row] = self.tiles_in_play[self.selected.row][:self.selected.col] + '.' + self.tiles_in_play[self.selected.row][self.selected.col + 1:]
+                self.selected.remove(self.in_play)
+                self.selected.in_play = False
+            if 0 <= x <= self.BOARD_SIZE[0] and 0 <= y <= self.BOARD_SIZE[1]:
+                col, row = self.selected.get_board_position(x, y)
+                if self.tiles_in_play[row][col] == '.' and self.played_tiles[row][col] == '.':
+                    self.selected.update(x,y)
+                    self.selected.in_play = True
+                    self.in_play.add(self.selected)
+                    self.tiles_in_play[row] = self.tiles_in_play[row][:col] + self.selected.letter + self.tiles_in_play[row][col + 1:]
 
-        if self.buttons and self.buttons in self.selected.groups():
+            self.selected = None
+
+        if self.selected and self.buttons and self.buttons in self.selected.groups():
             if self.selected.statement == "Redraw":
                 if not self.redraw:
-                    self.selected = []
                     self.redraw = True
-                    self.reset_active()
+                    self.reset_active() #puts all the tile in hand to do redraw
+                    color = 203, 203, 158
+                    self.selected.update(self.selected.x_coord, self.selected.y_coord, color)
+                    self.selected = None
+                    return
                 else:
-                    self.redraw = False
+                    color = 253, 253, 208
+                    self.selected.update(self.selected.x_coord, self.selected.y_coord, color)
                     self.update()
+                    self.next_turn()
+                    self.redraw = False
+                    self.selected = None
+                    return
+
+        if self.redraw:
+            self.selection.add(self.selected)
+            print(self.selection)
+            self.selected = None
+
+    def get_tile_on_board(self, row, col):
+        for tile in self.on_board:
+            if tile.row == row and tile.col == col:
+                return tile
+        for tile in self.in_play:
+            if tile.row == row and tile.col == col:
+                return tile
 
     def next_turn(self):
         #updates scores and removes tiles from hands of player
         print("Next Turn")
 
+        player = None
+
         if self.turn == 0:
-            self.p1_score += self.score
+            self.p1_score = self.p1_score + self.score
+            print("Player 1 Score Updated: ", self.p1_score)
+            print(str(self.p1_score))
+            self.p1_display.update_text(str(self.p1_score))
+            print(self.p1_display)
+            player = self.player1
         else:
-            self.p2_score += self.score
+            self.p2_score = self.p2_score + self.score
+            self.p2_display.update_text(str(self.p2_score))
+            player = self.player2
 
         print("Score Reset")
         self.score = 0
 
-        for tile in self.in_play:
-            print("Moving tile letter: ", tile.letter)
-            tile.add(self.on_board)
-            if self.turn == 0:
-                tile.remove(self.player1)
-            else:
-                tile.remove(self.player2)
-            tile.remove(self.in_play)
-            self.played_tiles[tile.row] = self.played_tiles[tile.row][:tile.col] + tile.letter + self.played_tiles[tile.row][tile.col + 1:]
-            self.tiles_in_play[tile.row] = self.tiles_in_play[tile.row][:tile.col] + '.' + self.tiles_in_play[tile.row][tile.col + 1:]
+        if self.redraw:
+            for tile in self.selection:
+                tile.add(self.purse)
+                tile.remove(player)
+                tile.remove(self.selection)
+        else:
+            for tile in self.in_play:
+                print("Moving tile letter: ", tile.letter)
+                tile.add(self.on_board)
+                tile.remove(player)
+                tile.remove(self.in_play)
+                self.played_tiles[tile.row] = self.played_tiles[tile.row][:tile.col] + tile.letter + self.played_tiles[tile.row][tile.col + 1:]
+                self.tiles_in_play[tile.row] = self.tiles_in_play[tile.row][:tile.col] + '.' + self.tiles_in_play[tile.row][tile.col + 1:]
 
         self.turn ^= 1
 
@@ -349,6 +404,8 @@ class Scrabble_Board(pygame.sprite.Sprite):
             word_score += tile_score
 
         word_score = word_score * multiplier
+
+        print('Word Score:', word_score)
 
         return word_score
 
@@ -410,29 +467,54 @@ class Tile(pygame.sprite.Sprite):
         return x, y
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, width, height, x, y, statement):
+    def __init__(self, width, height, x, y, statement, color = (253, 253, 208), pressable = True):
+        pygame.sprite.Sprite.__init__(self)
+
         self.width = width
         self.height = height
 
         # holds display statement value
-        self.statement = letter
+        self.statement = statement
         self.x_coord = x
         self.y_coord = y
+        self.color = color
+        self.statement = statement
+        self.pressable = pressable
 
         # generates tile image to draw
         self.font = pygame.font.SysFont(None, 30)
         self.image = pygame.Surface((width, height))
         self.rect = self.image.get_rect()
-        self.text = self.font.render(statement, True, (0, 0, 0))
+        self.text = self.font.render(self.statement, True, (0, 0, 0))
         self.text_rect = self.text.get_rect(center=self.rect.center)
-        self.image.fill((253, 253, 208))
+        self.image.fill(self.color)
         self.image.blit(self.text, self.text_rect)
 
         self.rect.topleft = self.x_coord, self.y_coord
 
+    def update(self, x, y, color):
+        self.color = color
+        self.x_coord = x
+        self.y_coord = y
+
+        self.image.fill(self.color)
+        self.image.blit(self.text, self.text_rect)
+
+        self.rect.topleft = self.x_coord, self.y_coord
+
+    def update_text(self, statement):
+        # print("Updating Text")
+        print("Old Text: ", self.statement)
+        self.statement = statement
+        print("Updated Text: ", self.statement)
+        self.text = self.font.render(self.statement, True, (0, 0, 0))
+        self.update(self.x_coord, self.y_coord, self.color)
+
     def pressed(self):
         pass
 
+    def __str__(self):
+        return f"Text: {self.statement}"
 
 
 
