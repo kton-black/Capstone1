@@ -160,7 +160,7 @@ class BoardScreen(SceneBase):
             print("On Played: ", on_played)
             if on_played:
 
-                score = self.Check_Words(merged)
+                score = self.Check_Words(merged) - self.Check_Words(self.board.played_tiles)
                 print("On Played Score: ", score)
                 if score > 0:
                     self.board.score = score

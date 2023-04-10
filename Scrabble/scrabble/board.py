@@ -64,6 +64,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
         #use for drawing interface
         self.buttons = pygame.sprite.Group()
         self.misc = pygame.sprite.Group()
+        self.toggled_buttons = pygame.sprite.Group()
 
         #generate initial data from ini files
         self.load_board()
@@ -175,10 +176,6 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.buttons.draw(screen)
         self.misc.draw(screen)
 
-    def draw_scores(self, screen):
-
-        pass
-
     def render(self, screen):
         #calls all functions to redraw scene (used for loop)
 
@@ -233,7 +230,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
             # print(letter['count'])
             for num in range(0,int(self.tiles_key[letter]['count'])):
                 # print(num)
-                tile = Tile(letter, self.TILE_SIZE[0], self.TILE_SIZE[1])
+                tile = Tile(letter, self.TILE_SIZE[0], self.TILE_SIZE[1], score = self.tiles_key[letter]['points'])
                 self.all_tiles.add(tile)
                 self.purse.add(tile)
 
@@ -252,14 +249,18 @@ class Scrabble_Board(pygame.sprite.Sprite):
     def load_interface(self):
         #generate buttons
 
+        #player scores
         p1 = Button(100, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 1, "P1 Score:", color= (250, 220, 120))
         p2 = Button(100, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 3, "P2 Score:", color= (250, 220, 120))
         self.p1_display = Button(200, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 150, self.TILE_SIZE[0] * 1, str(self.p1_score))
         self.p2_display = Button(200, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 150, self.TILE_SIZE[0] * 3, str(self.p2_score))
 
+        #player redraw buttons
         redraw = Button(300, self.TILE_SIZE[1] , self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 11, "Redraw")
+        redraw_cancel = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Click to Cancel Redraw")
 
         self.buttons.add(redraw)
+        self.toggled_buttons.add(redraw_cancel)
         self.misc.add(p1)
         self.misc.add(p2)
         self.misc.add(self.p1_display)
@@ -291,10 +292,12 @@ class Scrabble_Board(pygame.sprite.Sprite):
 
         if self.selected == None:
             self.selected = self.get_press(x, y)
-        else:
+        elif isinstance(self.selected, Tile):
             if self.selected.in_play:
                 self.tiles_in_play[self.selected.row] = self.tiles_in_play[self.selected.row][:self.selected.col] + '.' + self.tiles_in_play[self.selected.row][self.selected.col + 1:]
                 self.selected.remove(self.in_play)
+                if self.selected.letter == '_':
+                    self.selected.update_text('_')
                 self.selected.in_play = False
             if 0 <= x <= self.BOARD_SIZE[0] and 0 <= y <= self.BOARD_SIZE[1]:
                 col, row = self.selected.get_board_position(x, y)
@@ -324,7 +327,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
                     self.selected = None
                     return
 
-        if self.redraw:
+        if self.redraw and isinstance(self.selected, Tile):
             self.selection.add(self.selected)
             print(self.selection)
             self.selected = None
@@ -410,7 +413,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
         return word_score
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, letter, width, height, blank = False):
+    def __init__(self, letter, width, height, score = "0"):
         pygame.sprite.Sprite.__init__(self)
 
         #holds tile pixel size
@@ -419,7 +422,9 @@ class Tile(pygame.sprite.Sprite):
 
         #holds character value
         self.letter = letter
-        self.is_blank = blank
+        self.is_blank = False
+        if score == '0':
+            self.is_blank = True
 
         #used to know when and where tiles should be shown
         self.in_play = False
@@ -431,12 +436,15 @@ class Tile(pygame.sprite.Sprite):
 
         #generates tile image to draw
         self.font = pygame.font.SysFont(None, 30)
+        self.score_font = pygame.font.SysFont(None, 15)
         self.image = pygame.Surface((width, height))
         self.rect = self.image.get_rect()
         self.text = self.font.render(letter, True, (0, 0, 0))
+        self.score_text = self.score_font.render(score, True, (0, 0, 0))
         self.text_rect = self.text.get_rect(center=self.rect.center)
+        self.score_rect = self.score_text.get_rect(center=(self.text_rect.topleft[0] - 5, self.text_rect.topleft[1] - 5))
         self.image.fill((253,253,208))
-        self.image.blit(self.text, self.text_rect)
+        self.image.blits([(self.text, self.text_rect),(self.score_text, self.score_rect)])
 
     def update(self, x, y, visible = True):
         #changes tile position and visibility
@@ -451,6 +459,9 @@ class Tile(pygame.sprite.Sprite):
             self.rect.topleft = x, y
 
         self.visible = visible
+
+    def update_text(self, letter):
+        self.text = self.font.render(letter, True, (0, 0, 0))
 
     def get_board_position(self, x, y):
         #finds the col & row of the board
