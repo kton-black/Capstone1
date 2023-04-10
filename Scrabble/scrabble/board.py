@@ -64,7 +64,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
         #use for drawing interface
         self.buttons = pygame.sprite.Group()
         self.misc = pygame.sprite.Group()
-        self.toggled_buttons = pygame.sprite.Group()
+        self.all_buttons = pygame.sprite.Group()
 
         #generate initial data from ini files
         self.load_board()
@@ -185,7 +185,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.draw_hand(screen)
         self.draw_interface(screen)
 
-        if self.selected:
+        if isinstance(self.selected, Tile):
             # print("Draw Selected", self.selected.rect)
             pygame.draw.rect(screen, (0,255,0), self.selected.rect, width=1)
 
@@ -257,10 +257,11 @@ class Scrabble_Board(pygame.sprite.Sprite):
 
         #player redraw buttons
         redraw = Button(300, self.TILE_SIZE[1] , self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 11, "Redraw")
-        redraw_cancel = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Click to Cancel Redraw")
+        redraw_cancel = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Click to Cancel Redraw", color=(0, 0, 0),alpha= 200, text_color=(255, 255, 255))
 
         self.buttons.add(redraw)
-        self.toggled_buttons.add(redraw_cancel)
+        self.all_buttons.add(redraw)
+        self.all_buttons.add(redraw_cancel)
         self.misc.add(p1)
         self.misc.add(p2)
         self.misc.add(self.p1_display)
@@ -314,6 +315,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
                 if not self.redraw:
                     self.redraw = True
                     self.reset_active() #puts all the tile in hand to do redraw
+                    self.buttons.add(self.get_button("Click to Cancel Redraw"))
                     color = 203, 203, 158
                     self.selected.update(self.selected.x_coord, self.selected.y_coord, color)
                     self.selected = None
@@ -321,11 +323,19 @@ class Scrabble_Board(pygame.sprite.Sprite):
                 else:
                     color = 253, 253, 208
                     self.selected.update(self.selected.x_coord, self.selected.y_coord, color)
+                    self.buttons.remove(self.get_button("Click to Cancel Redraw"))
                     self.update()
                     self.next_turn()
                     self.redraw = False
                     self.selected = None
                     return
+            if self.selected.statement == "Click to Cancel Redraw":
+                self.selection.empty()
+                button = self.get_button("Redraw")
+                button.update(button.x_coord, button.y_coord, (253, 253, 208))
+                self.redraw = False
+                self.selected.remove(self.buttons)
+                self.selected = None
 
         if self.redraw and isinstance(self.selected, Tile):
             self.selection.add(self.selected)
@@ -412,6 +422,12 @@ class Scrabble_Board(pygame.sprite.Sprite):
 
         return word_score
 
+    def get_button(self, statement):
+        for button in self.all_buttons.sprites():
+            if button.statement == statement:
+                return button
+        return None
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, letter, width, height, score = "0"):
         pygame.sprite.Sprite.__init__(self)
@@ -478,7 +494,7 @@ class Tile(pygame.sprite.Sprite):
         return x, y
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, width, height, x, y, statement, color = (253, 253, 208), pressable = True):
+    def __init__(self, width, height, x, y, statement, color = (253, 253, 208), text_color = (0, 0, 0), alpha = 255, pressable = True):
         pygame.sprite.Sprite.__init__(self)
 
         self.width = width
@@ -489,16 +505,17 @@ class Button(pygame.sprite.Sprite):
         self.x_coord = x
         self.y_coord = y
         self.color = color
-        self.statement = statement
+        self.text_color = text_color
         self.pressable = pressable
 
         # generates tile image to draw
         self.font = pygame.font.SysFont(None, 30)
         self.image = pygame.Surface((width, height))
         self.rect = self.image.get_rect()
-        self.text = self.font.render(self.statement, True, (0, 0, 0))
+        self.text = self.font.render(self.statement, True, self.text_color)
         self.text_rect = self.text.get_rect(center=self.rect.center)
         self.image.fill(self.color)
+        self.image.set_alpha(alpha)
         self.image.blit(self.text, self.text_rect)
 
         self.rect.topleft = self.x_coord, self.y_coord
@@ -518,7 +535,7 @@ class Button(pygame.sprite.Sprite):
         print("Old Text: ", self.statement)
         self.statement = statement
         print("Updated Text: ", self.statement)
-        self.text = self.font.render(self.statement, True, (0, 0, 0))
+        self.text = self.font.render(self.statement, True, self.text_color)
         self.update(self.x_coord, self.y_coord, self.color)
 
     def pressed(self):
