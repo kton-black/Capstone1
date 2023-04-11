@@ -15,9 +15,7 @@ YELLOW = (255, 255, 0)
 
 class Scrabble_Board(pygame.sprite.Sprite):
 
-    def __init__(self, board_width=600, board_height=600):
-        pygame.init()
-
+    def __init__(self, board_width=600, board_height=600, vsComputer=False):
         #set board and masks
         self.board = []
         self.played_tiles = []
@@ -528,7 +526,7 @@ class Tile(pygame.sprite.Sprite):
         return x, y
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, width, height, x, y, statement, color = (253, 253, 208), text_color = (0, 0, 0), alpha = 255, pressable = True):
+    def __init__(self, width, height, x, y, statement, color = (253, 253, 208), text_color = (0, 0, 0), font_size = 30, alpha = 255, pressable = True):
         pygame.sprite.Sprite.__init__(self)
 
         self.width = width
@@ -540,10 +538,11 @@ class Button(pygame.sprite.Sprite):
         self.y_coord = y
         self.color = color
         self.text_color = text_color
+        self.font_size = font_size
         self.pressable = pressable
 
         # generates tile image to draw
-        self.font = pygame.font.SysFont(None, 30)
+        self.font = pygame.font.SysFont(None, self.font_size)
         self.image = pygame.Surface((width, height))
         self.rect = self.image.get_rect()
         self.text = self.font.render(self.statement, True, self.text_color)
