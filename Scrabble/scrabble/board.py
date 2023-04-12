@@ -477,6 +477,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
 
     def end_game(self):
         self.end = True
+        self.pause = True
         self.buttons.add(self.get_button("Game Over!"))
 
 

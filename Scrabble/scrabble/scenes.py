@@ -79,6 +79,7 @@ class BoardScreen(SceneBase):
         self.vsComputer = vsComputer
         self.clock = pygame.time.Clock()
         self.timer = pygame.time.set_timer(pygame.USEREVENT, 1000)
+        self.redraw = False
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
@@ -86,41 +87,49 @@ class BoardScreen(SceneBase):
                 print('Computer turn')
                 tiles = []
                 blanks = []
+                self.redraw = True
+
                 for tile in self.board.player2.sprites():
                     tiles.append(tile.letter)
-                moves = self.computer_player(self.board.played_tiles, tiles)
-                print(moves)
-                if moves:
-                    while "_" in tiles:
-                        for play in moves:
-                            if play[0] in tiles:
-                                tiles.remove(play[0])
-                            else:
-                                blanks.append(play[0])
-                    for move in moves:
-                        for tile in self.board.player2.sprites():
-                            if move[0] == tile.letter:
-                                x, y = tile.rect.center
-                                self.board.select_tile(x, y)
-                                x = self.board.TILE_SIZE[0] * move[1]
-                                y = self.board.TILE_SIZE[1] * move[2]
-                                self.board.select_tile(x, y)
-                            elif tile.letter == "_" and move[0] in blanks:
-                                x, y = tile.rect.center
-                                self.board.select_tile(x, y)
-                                x = self.board.TILE_SIZE[0] * move[1]
-                                y = self.board.TILE_SIZE[1] * move[2]
-                                self.board.select_tile(x, y)
-                                self.board.enter_blank(chr(move[0]))
-                    self.check = True
-                else:
-                    redraw = self.board.get_button("Redraw")
-                    x, y = redraw.rect.center
+                possible_words = self.computer_player(self.board.played_tiles, tiles)
+                if possible_words:
+                    for index in range(len(possible_words)):
+                        moves = possible_words[index]
+                        print(moves)
+                        if moves:
+                            while "_" in tiles:
+                                for play in moves:
+                                    if play[0] in tiles:
+                                        tiles.remove(play[0])
+                                    else:
+                                        blanks.append(play[0])
+                            for move in moves:
+                                for tile in self.board.player2.sprites():
+                                    if move[0] == tile.letter:
+                                        x, y = tile.rect.center
+                                        self.board.select_tile(x, y)
+                                        x = self.board.TILE_SIZE[0] * move[1]
+                                        y = self.board.TILE_SIZE[1] * move[2]
+                                        self.board.select_tile(x, y)
+                                    elif tile.letter == "_" and move[0] in blanks:
+                                        x, y = tile.rect.center
+                                        self.board.select_tile(x, y)
+                                        x = self.board.TILE_SIZE[0] * move[1]
+                                        y = self.board.TILE_SIZE[1] * move[2]
+                                        self.board.select_tile(x, y)
+                                        self.board.enter_blank(chr(move[0]))
+                            self.check = True
+                            self.Update()
+                            if not self.redraw:
+                                break
+                if self.redraw:
+                    redraw_button = self.board.get_button("Redraw")
+                    x, y = redraw_button.rect.center
                     self.board.select_tile(x, y)
                     for tile in self.board.player2.sprites():
-                        x, y = redraw.rect.center
+                        x, y = tile.rect.center
                         self.board.select_tile(x, y)
-                    x, y = redraw.rect.center
+                    x, y = redraw_button.rect.center
                     self.board.select_tile(x, y)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -152,6 +161,8 @@ class BoardScreen(SceneBase):
             if self.Verify_Turn():
                 # self.board.get_score()
                 self.board.next_turn()
+                if self.vsComputer:
+                    self.redraw = False
             else:
                 self.board.reset_active()
 
@@ -406,8 +417,11 @@ class BoardScreen(SceneBase):
             letters_in_hand.pop()
             alphabet_words[letter] = words_for_letter
 
+        possible_words = []
+
         for letter in alphabet:
             # print('Letter: ', letter)
+            num_words = 0
             letter_positions = []
             for row in range(len(board_array)):
                 for col in range(len(board_array[row])):
@@ -415,6 +429,8 @@ class BoardScreen(SceneBase):
                         letter_positions.append((row,col))
 
             for word in alphabet_words[letter]:
+                if num_words >= 10:
+                    break
                 # print('Word: ', word)
                 indexes = self.find_index(word, letter)
                 for index in indexes:
@@ -440,120 +456,13 @@ class BoardScreen(SceneBase):
                         if horizontal:
                             print('Word: ', word)
                             print('Horizontal Word: ', horizontal_word)
-                            return horizontal_word
-                        elif vertical:
+                            possible_words.append(horizontal_word)
+                            num_words += 1
+                        if vertical:
                             print('Word: ', word)
                             print('Vertical Word: ', vertical_word)
-                            return vertical_word
+                            possible_words.append(vertical_word)
+                            num_words += 1
+        if len(possible_words) > 0:
+            return possible_words
         return None
-
-
-
-
-        # print(words_for_letter)
-
-        # # possible_plays = []
-        # for letter in alphabet:
-        #     print(letter)
-        #     for i in range(len(board_array)):
-        #         for j in range(len(board_array[i])):
-        #             if board_array[i][j] != letter:
-        #                 continue
-        #
-        #             # check for valid horizontal play
-        #             # checks 7 left and 7 right as an overarching check for all cases
-        #             left = max(0, j - len(letters_in_hand))
-        #             right = min(len(board_array[i]) - 1, j + len(letters_in_hand))
-        #             # print('Board')
-        #             print(board_array)
-        #             # print('Width: ', len(board_array[i]))
-        #             # print('Left', left)
-        #             # print('Right', right)
-        #             is_valid_play = -1
-        #             for col in range(left, right):
-        #                 if col != j and board_array[i][col] != '.':
-        #                     is_valid_play = col - j -1
-        #             if not is_valid_play:
-        #                 continue
-        #             # checks above and below of the same range to make sure its empty
-        #             for k in range(left, right):
-        #                 if (i > 0 and board_array[i - 1][k] != '.') or (
-        #                         i < len(board_array) - 1 and board_array[i + 1][k] != '.'):
-        #                     is_valid_play = False
-        #                     break
-        #             if not is_valid_play:
-        #                 continue
-        #             for word in alphabet_words[letter]:
-        #                 print(word)
-        #                 # finding the positions of each letter to be placed on the board
-        #                 for idx in range(len(word)):
-        #                     print('J: ', j, ' idx: ', idx, ' Word: ', word, ' left: ', left, ' right: ', right)
-        #
-        #                     if word[idx] == letter and not (j - idx < left or j + idx > right):
-        #                         positions = [(letter, i, j)]
-        #                         for k in range(1, len(word)):
-        #                             if j - idx + k < left or j + idx + k > right:
-        #                                 break
-        #                             positions.append((word[k], i, j - idx + k))
-        #                             print('In k loop: ', positions)
-        #                         # removes the letter already on the board from the positions of tiles to be placed
-        #
-        #                         print('Before pop: ', positions)
-        #                         for pos_idx, pos in enumerate(positions):
-        #                             if pos[0] == letter and pos_idx != 0:
-        #                                 positions.pop(pos_idx)
-        #                                 print('After pop: ', positions)
-        #                                 break
-        #                         print(positions)
-        #                         return positions
-        #                         # possible_plays.append(positions)
-        #
-        #             # check for valid vertical play
-        #             # checks 7 up and 7 down as an overarching check for all cases
-        #             top = max(0, i - len(letters_in_hand))
-        #             bottom = min(len(board_array) - 1, i + len(letters_in_hand))
-        #             # print('Height: ', len(board_array))
-        #             # print('Top', top)
-        #             # print('Bottom', bottom)
-        #             is_valid_play = True
-        #             for row in range(top, bottom):
-        #                 if k != row and board_array[row][j] != '.':
-        #                     is_valid_play = False
-        #             if not is_valid_play:
-        #                 continue
-        #
-        #             # checks right and left of the same range to make sure its empty
-        #             for k in range(top, bottom):
-        #                 if (j > 0 and board_array[k][j - 1] != '.') or (
-        #                         j < len(board_array[i]) - 1 and board_array[k][j + 1] != '.'):
-        #                     is_valid_play = False
-        #                     break
-        #             if not is_valid_play:
-        #                 continue
-        #             letter = board_array[i][j]
-        #             for word in alphabet_words[letter]:
-        #                 # finding the positions of each letter to be placed on the board
-        #                 for idx in range(len(word)):
-        #                     print('J: ', j, ' idx: ', idx, ' Word: ', word, ' top: ', top, ' bottom: ', bottom)
-        #                     if word[idx] == letter and not (i - idx < top or i - idx > bottom):
-        #                         positions = [(letter, i, j)]
-        #                         for k in range(1, len(word)):
-        #                             if i - idx + k < top or i - idx + k > bottom:
-        #                                 break
-        #                             positions.append((word[k], i - idx + k, j))
-        #                         # removes the letter already on the board from the positions of tiles to be placed
-        #
-        #                         for pos_idx, pos in enumerate(positions):
-        #                             if pos[0] == letter and pos_idx != 0:
-        #                                 positions.pop(pos_idx)
-        #                                 break
-        #                         return positions
-        #                         # possible_plays.append(positions)
-        #
-        # # If there are no possible plays, return None
-        # # if not possible_plays:
-        # return None
-        #
-        # # Randomly select one of the possible plays and return it
-        # # selected_play = random.choice(possible_plays)
-        # return selected_play
