@@ -3,6 +3,7 @@ import pathlib
 import configparser
 import sys
 import random
+import time
 
 # define colors for the grid and score spaces
 WHITE = (255, 255, 255)
@@ -15,7 +16,7 @@ YELLOW = (255, 255, 0)
 
 class Scrabble_Board(pygame.sprite.Sprite):
 
-    def __init__(self, board_width=600, board_height=600, vsComputer= False):
+    def __init__(self, board_width=600, board_height=600, vsComputer= False, timer=60):
         #set board and masks
         self.board = []
         self.played_tiles = []
@@ -48,6 +49,7 @@ class Scrabble_Board(pygame.sprite.Sprite):
         self.blank = None
         self.pause = False
         self.end = False
+        self.time = timer
 
         #define constants for the board size, window size and grid size
         self.BOARD_SIZE = (board_width, board_height)
@@ -96,6 +98,8 @@ class Scrabble_Board(pygame.sprite.Sprite):
             # print(self.player1)
             # print(self.player2)
             # print(self.purse)
+        # self.time = self.time - ((time.time() - self.start_time)/1000)
+        # self.timer.update_text(str(self.time))
 
     def draw_board(self, screen):
         # create the window and set its title
@@ -264,14 +268,21 @@ class Scrabble_Board(pygame.sprite.Sprite):
 
         #player redraw buttons
         redraw = Button(300, self.TILE_SIZE[1] , self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 11, "Redraw")
-        redraw_cancel = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Click to Cancel Redraw", color=(0, 0, 0),alpha= 200, text_color=(255, 255, 255))
+        redraw_cancel = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Click to Cancel Redraw", color=(0, 0, 0), alpha= 200, text_color=(255, 255, 255))
 
         #board covers
         enter_blank = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Input Letter for Blank", color=(0, 0, 0),alpha= 200, text_color=(255, 255, 255))
         end_game = Button(self.BOARD_SIZE[0], self.BOARD_SIZE[1], 0, 0, "Game Over!", color=(0, 0, 0),alpha= 200, text_color=(255, 255, 255), font_size= 120)
 
+        timer_text = Button(100, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 50, self.TILE_SIZE[0] * 9, "Timers:", color=(250, 220, 120))
+        self.timer = Button(200, self.TILE_SIZE[1], self.BOARD_SIZE[0] + 150, self.TILE_SIZE[0] * 9, str(self.time), color= (250, 220, 120))
+
         self.buttons.add(redraw)
+        self.buttons.add(timer_text)
+        self.buttons.add(self.timer)
         self.all_buttons.add(redraw)
+        self.all_buttons.add(timer_text)
+        self.all_buttons.add(self.timer)
         self.all_buttons.add(redraw_cancel)
         self.all_buttons.add(enter_blank)
         self.all_buttons.add(end_game)
@@ -465,8 +476,9 @@ class Scrabble_Board(pygame.sprite.Sprite):
         return None
 
     def end_game(self):
+        self.end = True
         self.buttons.add(self.get_button("Game Over!"))
-        pass
+
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, letter, width, height, score = "0"):
