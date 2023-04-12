@@ -11,10 +11,13 @@ def main():
 
 class Scrabble(object):
     def __init__(self, window_width=1000, window_height=600):
+        pygame.init()
+
         self.screen = pygame.display.set_mode((window_width,window_height))
 
     def run(self):
         scene = StartScreen()
+
 
         while scene:
             key_inputs = pygame.key.get_pressed()

@@ -27,12 +27,26 @@ class StartScreen(SceneBase):
         SceneBase.__init__(self)
 
         self.buttons = pygame.sprite.Group()
-        # self.load_buttons()
+        self.load_buttons()
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
-            if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE):
-                self.SwitchToScene(BoardScreen())
+            # if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE):
+                # self.SwitchToScene(BoardScreen())
+                # pass
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pressed = None
+                for button in self.buttons:
+                    if button.rect.collidepoint((event.pos[0], event.pos[1])):
+                        pressed = button
+                        break
+                if pressed:
+                    if pressed.statement == "Player VS Computer":
+                        self.SwitchToScene(BoardScreen(vsComputer = True))
+                    elif pressed.statement == "Player VS Player":
+                        self.SwitchToScene(BoardScreen())
+                    elif pressed.statement == "Exit Game":
+                        self.SwitchToScene(None)
 
     def Update(self):
 
@@ -46,19 +60,22 @@ class StartScreen(SceneBase):
     def load_buttons(self):
 
         # width, height, x, y, statement, color = (253, 253, 208), text_color = (0, 0, 0), alpha = 255, pressable = True
-        playerVplayer = Button(500, 100, 250, 400, "Player VS Player")
+        playerVcomputer = Button(500, 75, 250, 300, "Player VS Computer", font_size= 60)
+        playerVplayer = Button(500, 75, 250, 400, "Player VS Player", font_size= 60)
+        exit = Button(500, 75, 250, 500, "Exit Game", font_size= 60)
         pygame.display.flip()
 
+        self.buttons.add(playerVcomputer)
         self.buttons.add(playerVplayer)
-
-        pass
+        self.buttons.add(exit)
 
 class BoardScreen(SceneBase):
-    def __init__(self):
+    def __init__(self, vsComputer = False):
         SceneBase.__init__(self)
         self.selecting = False
-        self.board = Scrabble_Board()
+        self.board = Scrabble_Board(vsComputer= vsComputer)
         self.check = False
+        self.vsComputer = vsComputer
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
@@ -150,8 +167,8 @@ class BoardScreen(SceneBase):
                     #checks if expanding off of played tiles in between letters (requirement to play word)
                     elif not self.board.played_tiles[rows[0]][col] == '.':
                         on_played = True
-                # checks if edge tile is on starting square
-                if start and (max(cols) == 7 or min(cols) == 7):
+                # checks if starting word is on starting square
+                if start and 7 in rows and 7 in cols:
                     on_played = True
                 # checks if expanding off of played tiles on edges horizontally
                 elif not on_played:
@@ -169,8 +186,8 @@ class BoardScreen(SceneBase):
                     # checks if expanding off of played tiles in between letters
                     elif not self.board.played_tiles[row][cols[0]] == '.':
                         on_played = True
-                # checks if edge tile is on starting square
-                if start and (max(rows) == 7 or min(rows) == 7):
+                # checks if starting word is on starting square
+                if start and 7 in rows and 7 in cols:
                     on_played = True
                 # checks if expanding off of played tiles on edges vertically
                 elif not on_played:
