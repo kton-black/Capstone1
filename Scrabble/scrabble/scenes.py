@@ -1,5 +1,6 @@
 import pygame
 import itertools
+import random
 
 from scrabble.board import Scrabble_Board
 from scrabble.board import Button
@@ -76,10 +77,62 @@ class BoardScreen(SceneBase):
         self.board = Scrabble_Board(vsComputer= vsComputer)
         self.check = False
         self.vsComputer = vsComputer
+        self.clock = pygame.time.Clock()
+        self.timer = pygame.time.set_timer(pygame.USEREVENT, 1000)
+        self.redraw = False
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.vsComputer and self.board.turn == 1:
+                print('Computer turn')
+                tiles = []
+                blanks = []
+                self.redraw = True
+
+                for tile in self.board.player2.sprites():
+                    tiles.append(tile.letter)
+                possible_words = self.computer_player(self.board.played_tiles, tiles)
+                if possible_words:
+                    for index in range(len(possible_words)):
+                        moves = possible_words[index]
+                        print(moves)
+                        if moves:
+                            while "_" in tiles:
+                                for play in moves:
+                                    if play[0] in tiles:
+                                        tiles.remove(play[0])
+                                    else:
+                                        blanks.append(play[0])
+                            for move in moves:
+                                for tile in self.board.player2.sprites():
+                                    if move[0] == tile.letter:
+                                        x, y = tile.rect.center
+                                        self.board.select_tile(x, y)
+                                        x = self.board.TILE_SIZE[0] * move[1]
+                                        y = self.board.TILE_SIZE[1] * move[2]
+                                        self.board.select_tile(x, y)
+                                    elif tile.letter == "_" and move[0] in blanks:
+                                        x, y = tile.rect.center
+                                        self.board.select_tile(x, y)
+                                        x = self.board.TILE_SIZE[0] * move[1]
+                                        y = self.board.TILE_SIZE[1] * move[2]
+                                        self.board.select_tile(x, y)
+                                        self.board.enter_blank(chr(move[0]))
+                            self.check = True
+                            self.Update()
+                            if not self.redraw:
+                                break
+                if self.redraw:
+                    redraw_button = self.board.get_button("Redraw")
+                    x, y = redraw_button.rect.center
+                    self.board.select_tile(x, y)
+                    for tile in self.board.player2.sprites():
+                        x, y = tile.rect.center
+                        self.board.select_tile(x, y)
+                    x, y = redraw_button.rect.center
+                    self.board.select_tile(x, y)
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 # select/deselect objects
                 self.board.select_tile(event.pos[0], event.pos[1])
                 self.selecting = not self.selecting
@@ -95,6 +148,11 @@ class BoardScreen(SceneBase):
                 # print("Blank Letter Input: ", chr(event.key))
                 self.board.enter_blank(chr(event.key))
 
+            elif event.type == pygame.USEREVENT:
+                self.board.time = self.board.time - 1
+                self.board.timer.update_text(str(self.board.time)) if self.board.time > 0 else self.board.end_game()
+
+
     def Update(self):
         # call functions to verify plays
         # print("Updating Scene")
@@ -103,6 +161,8 @@ class BoardScreen(SceneBase):
             if self.Verify_Turn():
                 # self.board.get_score()
                 self.board.next_turn()
+                if self.vsComputer:
+                    self.redraw = False
             else:
                 self.board.reset_active()
 
@@ -157,9 +217,9 @@ class BoardScreen(SceneBase):
 
             elif horizontal:
                 for col in range(min(cols), max(cols)+1):
-                    # print("Horizontal")
-                    # print("Row: ", rows[0])
-                    # print("Col: ", col)
+                    print("Horizontal")
+                    print("Row: ", rows[0])
+                    print("Col: ", col)
 
                     #checks for blank in between characters
                     if merged[rows[0]][col] == '.':
@@ -178,9 +238,9 @@ class BoardScreen(SceneBase):
 
             elif vertical:
                 for row in range(min(rows), max(rows)+1):
-                    # print("Vertical")
-                    # print("Row: ", row)
-                    # print("Col: ", cols[0])
+                    print("Vertical")
+                    print("Row: ", row)
+                    print("Col: ", cols[0])
                     if merged[row][cols[0]] == '.':
                         return False
                     # checks if expanding off of played tiles in between letters
@@ -195,7 +255,7 @@ class BoardScreen(SceneBase):
                        max(rows) + 1 < len(merged) and not self.board.played_tiles[max(rows)+1][cols[0]] == '.':
                         on_played = True
 
-            # print("On Played: ", on_played)
+            print("On Played: ", on_played)
             if on_played:
 
                 score = self.Check_Words(merged) - self.Check_Words(self.board.played_tiles)
@@ -302,3 +362,107 @@ class BoardScreen(SceneBase):
             return True
         else:
             return False
+
+    def find_index(self, word, letter):
+        start = 0
+        while True:
+            start = word.find(letter, start)
+            if start == -1: return
+            yield start
+            start += len(letter)  # use start += 1 to find overlapping matches
+
+    def computer_player(self, board_array, letters_in_hand):
+        alphabet = ''
+
+        for row in board_array:
+            for letter in row:
+                if not letter in alphabet and not letter == '.':
+                    alphabet = alphabet + letter
+
+        # alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+        # print(alphabet)
+
+        # replace any '_' in letters_in_hand with a random vowel
+        letters_in_hand = [random.choice(['A', 'E', 'I', 'O', 'U']) if letter == '_' else letter for letter in
+                           letters_in_hand]
+
+        print(letters_in_hand)
+
+        # initialize a dictionary to store the words for each letter of the alphabet
+        alphabet_words = {}
+        for letter in alphabet:
+            alphabet_words[letter] = []
+        # print(alphabet_words)
+
+        # iterate through each letter in the alphabet and find all possible words
+        # basically is adds one letter at a time to the letters_in_hand, sees what words it can make with it and adds those words to a dictionary for that letter
+        # then it removes that letter from the letters_in_hand and moves on to the next one
+        # for horizontal and vertical plays later, it iterates through all letters again
+        # if finds where that letter is on the board and trys to make sure it can place words from that letters dictionary
+        for letter in alphabet:
+            # print(letter)
+            words_for_letter = []
+            letters_in_hand.append(letter)
+            for length in range(2, len(letters_in_hand) + 1):
+                # print(length)
+                for tiles in itertools.combinations(letters_in_hand, length):
+                    # print(tiles)
+                    word = ''.join(tiles)
+                    if self.valid_word(word):
+                        if not word in words_for_letter and letter in word:
+                            # print(word)
+                            words_for_letter.append(word)
+            # print('Next')
+            letters_in_hand.pop()
+            alphabet_words[letter] = words_for_letter
+
+        possible_words = []
+
+        for letter in alphabet:
+            # print('Letter: ', letter)
+            num_words = 0
+            letter_positions = []
+            for row in range(len(board_array)):
+                for col in range(len(board_array[row])):
+                    if board_array[row][col] == letter:
+                        letter_positions.append((row,col))
+
+            for word in alphabet_words[letter]:
+                if num_words >= 10:
+                    break
+                # print('Word: ', word)
+                indexes = self.find_index(word, letter)
+                for index in indexes:
+                    for letter_position in letter_positions:
+                        horizontal, vertical = True, True
+                        horizontal_word, vertical_word = [], []
+                        for i in range(len(word)):
+                            if i < index or i > index:
+                                # check horizontal
+                                if horizontal and 0 < letter_position[1] - (index - i) < len(board_array) and board_array[letter_position[0]][letter_position[1] - (index - i)] == '.':
+                                    horizontal_word.append((word[i], letter_position[0], letter_position[1] - (index - i)))
+                                else:
+                                    horizontal = False
+                                # check vertical
+                                if vertical and 0 < letter_position[0] - (index - i) < len(board_array) and board_array[letter_position[0] - (index - i)][letter_position[1]] == '.':
+                                    vertical_word.append((word[i], letter_position[0] - (index - i), letter_position[1]))
+                                else:
+                                    vertical = False
+                        if horizontal and 0 < letter_position[1] - index - 1 < len(board_array) and board_array[letter_position[0]][letter_position[1] - index - 1] != '.' and  0 < letter_position[1] - index + len(word) < len(board_array) and board_array[letter_position[0]][letter_position[1] - index + len(word)] != '.':
+                            horizontal = False
+                        if vertical and 0 < letter_position[0] - index - 1 < len(board_array) and board_array[letter_position[0] - index - 1][letter_position[1]] != '.' and  0 < letter_position[0] - index + len(word) < len(board_array) and board_array[letter_position[0] - index + len(word)][letter_position[1]] != '.':
+                            vertical = False
+                        if horizontal:
+                            print('Word: ', word)
+                            print('Horizontal Word: ', horizontal_word)
+                            possible_words.append(horizontal_word)
+                            num_words += 1
+                        if vertical:
+                            print('Word: ', word)
+                            print('Vertical Word: ', vertical_word)
+                            possible_words.append(vertical_word)
+                            num_words += 1
+        if len(possible_words) > 0:
+            return possible_words
+        return None
