@@ -31,9 +31,10 @@ class StartScreen(SceneBase):
 
     def ProcessInput(self, events, pressed_keys):
         for event in events:
-            if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE):
-                self.SwitchToScene(BoardScreen())
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            # if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_SPACE):
+                # self.SwitchToScene(BoardScreen())
+                # pass
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 pressed = None
                 for button in self.buttons:
                     if button.rect.collidepoint((event.pos[0], event.pos[1])):
@@ -72,7 +73,7 @@ class BoardScreen(SceneBase):
     def __init__(self, vsComputer = False):
         SceneBase.__init__(self)
         self.selecting = False
-        self.board = Scrabble_Board()
+        self.board = Scrabble_Board(vsComputer= vsComputer)
         self.check = False
         self.vsComputer = vsComputer
 
